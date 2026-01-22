@@ -133,6 +133,7 @@ public class Simulation2D : MonoBehaviour
     {
         if (!isPaused)
         {
+            //obstacleCentre.x -= 0.01f;
             float timeStep = frameTime / iterationsPerFrame * timeScale;
 
             UpdateSettings(timeStep);
@@ -142,6 +143,7 @@ public class Simulation2D : MonoBehaviour
                 RunSimulationStep();
                 SimulationStepCompleted?.Invoke();
             }
+
         }
     }
 

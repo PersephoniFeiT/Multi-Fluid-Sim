@@ -11,6 +11,15 @@
 
 static const int NumThreads = 64;
 
+struct FluidMediumProfile{
+	float collisionDamping;
+	float targetDensity;
+	float pressureMultiplier;
+	float nearPressureMultiplier;
+	float viscosityStrength;
+	float3 padding;
+}
+
 // Buffers
 RWStructuredBuffer<float2> Positions;
 RWStructuredBuffer<float2> PredictedPositions;
@@ -19,16 +28,19 @@ RWStructuredBuffer<float2> Densities; // Density, Near Density
 RWStructuredBuffer<uint3> SpatialIndices; // used for spatial hashing
 RWStructuredBuffer<uint> SpatialOffsets; // used for spatial hashing
 
-// Settings
+RWStructuredBuffer<uint> fluidMediaIndeces;
+RWStructuredBuffer<FluidMediumProfile> fluidMedia;
+
+// Simulation Settings
 const uint numParticles;
 const float gravity;
 const float deltaTime;
-const float collisionDamping;
+//const float collisionDamping;
 const float smoothingRadius;
-const float targetDensity;
-const float pressureMultiplier;
-const float nearPressureMultiplier;
-const float viscosityStrength;
+//const float targetDensity;
+//const float pressureMultiplier;
+//const float nearPressureMultiplier;
+//const float viscosityStrength;
 const float2 boundsSize;
 const float2 interactionInputPoint;
 const float interactionInputStrength;
@@ -103,14 +115,14 @@ float2 CalculateDensity(float2 pos)
 	return float2(density, nearDensity);
 }
 
-float PressureFromDensity(float density)
+float PressureFromDensity(float density, FluidMediumProfile fluidMedium)
 {
-	return (density - targetDensity) * pressureMultiplier;
+	return (density - fluidMedium.targetDensity) * fluidMedium.pressureMultiplier;
 }
 
-float NearPressureFromDensity(float nearDensity)
+float NearPressureFromDensity(float nearDensity, FluidMediumProfile fluidMedium)
 {
-	return nearPressureMultiplier * nearDensity;
+	return fluidMedium.nearPressureMultiplier * nearDensity;
 }
 
 float2 ExternalForces(float2 pos, float2 velocity)
@@ -152,12 +164,12 @@ void HandleCollisions(uint particleIndex)
 	if (edgeDst.x <= 0)
 	{
 		pos.x = halfSize.x * sign(pos.x);
-		vel.x *= -1 * collisionDamping;
+		vel.x *= -1 * fluidMediaProfiles[fluidMediaIndeces[particleIndex]].collisionDamping;
 	}
 	if (edgeDst.y <= 0)
 	{
 		pos.y = halfSize.y * sign(pos.y);
-		vel.y *= -1 * collisionDamping;
+		vel.y *= -1 * fluidMediaProfiles[fluidMediaIndeces[particleIndex]].collisionDamping;
 	}
 
 	// Collide particle against the test obstacle
@@ -168,11 +180,11 @@ void HandleCollisions(uint particleIndex)
 	{
 		if (obstacleEdgeDst.x < obstacleEdgeDst.y) {
 			pos.x = obstacleHalfSize.x * sign(pos.x - obstacleCentre.x) + obstacleCentre.x;
-			vel.x *= -1 * collisionDamping;
+			vel.x *= -1 * fluidMediaProfiles[fluidMediaIndeces[particleIndex]].collisionDamping;
 		}
 		else {
 			pos.y = obstacleHalfSize.y * sign(pos.y - obstacleCentre.y) + obstacleCentre.y;
-			vel.y *= -1 * collisionDamping;
+			vel.y *= -1 * fluidMediaProfiles[fluidMediaIndeces[particleIndex]].collisionDamping;
 		}
 	}
 
@@ -225,8 +237,8 @@ void CalculatePressureForce (uint3 id : SV_DispatchThreadID)
 
 	float density = Densities[id.x][0];
 	float densityNear = Densities[id.x][1];
-	float pressure = PressureFromDensity(density);
-	float nearPressure = NearPressureFromDensity(densityNear);
+	float pressure = PressureFromDensity(density, fluidMediaProfiles[fluidMediaIndeces[id.x]]);
+	float nearPressure = NearPressureFromDensity(densityNear, fluidMediaProfiles[fluidMediaIndeces[id.x]]);
 	float2 pressureForce = 0;
 	
 	float2 pos = PredictedPositions[id.x];
@@ -266,8 +278,8 @@ void CalculatePressureForce (uint3 id : SV_DispatchThreadID)
 
 			float neighbourDensity = Densities[neighbourIndex][0];
 			float neighbourNearDensity = Densities[neighbourIndex][1];
-			float neighbourPressure = PressureFromDensity(neighbourDensity);
-			float neighbourNearPressure = NearPressureFromDensity(neighbourNearDensity);
+			float neighbourPressure = PressureFromDensity(neighbourDensity, fluidMediaProfiles[fluidMediaIndeces[neighbourIndex]]);
+			float neighbourNearPressure = NearPressureFromDensity(neighbourNearDensity, fluidMediaProfiles[fluidMediaIndeces[neighbourIndex]]);
 
 			float sharedPressure = (pressure + neighbourPressure) * 0.5;
 			float sharedNearPressure = (nearPressure + neighbourNearPressure) * 0.5;
@@ -328,7 +340,7 @@ void CalculateViscosity (uint3 id : SV_DispatchThreadID)
 		}
 
 	}
-	Velocities[id.x] += viscosityForce * viscosityStrength * deltaTime;
+	Velocities[id.x] += viscosityForce * fluidMediaIndeces[id.x].viscosityStrength * deltaTime;
 }
 
 [numthreads(NumThreads, 1, 1)]
