@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -135,6 +134,7 @@ GameObject:
   - component: {fileID: 271053319}
   - component: {fileID: 271053320}
   - component: {fileID: 271053322}
+  - component: {fileID: 271053323}
   m_Layer: 0
   m_Name: Simulation
   m_TagString: Untagged
@@ -173,20 +173,15 @@ MonoBehaviour:
   fixedTimeStep: 0
   iterationsPerFrame: 7
   gravity: -13
-  collisionDamping: 0.5
   smoothingRadius: 0.2
-  targetDensity: 234
-  pressureMultiplier: 225
-  nearPressureMultiplier: 18
-  viscosityStrength: 0.03
   boundsSize: {x: 17.1, y: 9.3}
   obstacleSize: {x: 2.75, y: 5}
   obstacleCentre: {x: 4.8, y: -1}
   interactionRadius: 2.5
   interactionStrength: 75
   compute: {fileID: 7200000, guid: 1c77ce8de78fddb419ed2d15cae41af0, type: 3}
-  spawner: {fileID: 271053320}
   display: {fileID: 271053322}
+  fluidMedium: {fileID: 271053323}
 --- !u!114 &271053320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,6 +247,25 @@ MonoBehaviour:
     m_NumAlphaKeys: 2
   gradientResolution: 64
   velocityDisplayMax: 7
+--- !u!114 &271053323
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 271053315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fe2c21f5b53f5245bed8170a27790c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  collisionDamping: 0.95
+  targetDensity: 500
+  pressureMultiplier: 10
+  nearPressureMultiplier: 30
+  viscosityStrength: 15
+  spawner: {fileID: 271053320}
+  display: {fileID: 271053322}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0

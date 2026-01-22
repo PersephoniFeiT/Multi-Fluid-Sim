@@ -10,12 +10,12 @@ public class Simulation2D : MonoBehaviour
     public bool fixedTimeStep;
     public int iterationsPerFrame;
     public float gravity;
-    [Range(0, 1)] public float collisionDamping = 0.95f;
+    //float collisionDamping = 0.95f;
     public float smoothingRadius = 2;
-    public float targetDensity;
-    public float pressureMultiplier;
-    public float nearPressureMultiplier;
-    public float viscosityStrength;
+    //float targetDensity;
+    //float pressureMultiplier;
+    //float nearPressureMultiplier;
+    //float viscosityStrength;
     public Vector2 boundsSize;
     public Vector2 obstacleSize;
     public Vector2 obstacleCentre;
@@ -26,8 +26,9 @@ public class Simulation2D : MonoBehaviour
 
     [Header("References")]
     public ComputeShader compute;
-    public ParticleSpawner spawner;
+    //public ParticleSpawner spawner;
     public ParticleDisplay2D display;
+    public FluidMedium fluidMedium;
 
     // Buffers
     public ComputeBuffer positionBuffer { get; private set; }
@@ -56,13 +57,22 @@ public class Simulation2D : MonoBehaviour
 
     void Start()
     {
+        // Load settings from fluid medium
+        //collisionDamping = fluidMedium.collisionDamping;
+        //targetDensity = fluidMedium.targetDensity;
+        //pressureMultiplier = fluidMedium.pressureMultiplier;
+        //nearPressureMultiplier = fluidMedium.nearPressureMultiplier;
+        //viscosityStrength = fluidMedium.viscosityStrength;
+
+        spawnData = fluidMedium.spawner.GetSpawnData();
+        numParticles = spawnData.positions.Length;
+
         Debug.Log("Controls: Space = Play/Pause, R = Reset, LMB = Attract, RMB = Repel");
 
         float deltaTime = 1 / 60f;
         Time.fixedDeltaTime = deltaTime;
 
-        spawnData = spawner.GetSpawnData();
-        numParticles = spawnData.positions.Length;
+        
 
         // Create buffers
         positionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
@@ -151,12 +161,12 @@ public class Simulation2D : MonoBehaviour
     {
         compute.SetFloat("deltaTime", deltaTime);
         compute.SetFloat("gravity", gravity);
-        compute.SetFloat("collisionDamping", collisionDamping);
+        compute.SetFloat("collisionDamping", fluidMedium.collisionDamping);
         compute.SetFloat("smoothingRadius", smoothingRadius);
-        compute.SetFloat("targetDensity", targetDensity);
-        compute.SetFloat("pressureMultiplier", pressureMultiplier);
-        compute.SetFloat("nearPressureMultiplier", nearPressureMultiplier);
-        compute.SetFloat("viscosityStrength", viscosityStrength);
+        compute.SetFloat("targetDensity", fluidMedium.targetDensity);
+        compute.SetFloat("pressureMultiplier", fluidMedium.pressureMultiplier);
+        compute.SetFloat("nearPressureMultiplier", fluidMedium.nearPressureMultiplier);
+        compute.SetFloat("viscosityStrength", fluidMedium.viscosityStrength);
         compute.SetVector("boundsSize", boundsSize);
         compute.SetVector("obstacleSize", obstacleSize);
         compute.SetVector("obstacleCentre", obstacleCentre);
