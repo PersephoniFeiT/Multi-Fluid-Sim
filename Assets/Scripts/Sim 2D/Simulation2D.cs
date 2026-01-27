@@ -30,6 +30,7 @@ public class Simulation2D : MonoBehaviour
     public ParticleDisplay2D display;
     [SerializeField]
     public FluidMedium[] fluidMedia;
+    FLuidMedium.FluidMediumProfile[] fluidProfiles;
 
     // Buffers
     public ComputeBuffer positionBuffer { get; private set; }
@@ -168,7 +169,6 @@ public class Simulation2D : MonoBehaviour
                 RunSimulationStep();
                 SimulationStepCompleted?.Invoke();
             }
-
         }
     }
 
@@ -188,12 +188,12 @@ public class Simulation2D : MonoBehaviour
     {
         compute.SetFloat("deltaTime", deltaTime);
         compute.SetFloat("gravity", gravity);
-        compute.SetFloat("collisionDamping", fluidMedium.collisionDamping);
+        //compute.SetFloat("collisionDamping", fluidMedium.collisionDamping);
         compute.SetFloat("smoothingRadius", smoothingRadius);
-        compute.SetFloat("targetDensity", fluidMedium.targetDensity);
-        compute.SetFloat("pressureMultiplier", fluidMedium.pressureMultiplier);
-        compute.SetFloat("nearPressureMultiplier", fluidMedium.nearPressureMultiplier);
-        compute.SetFloat("viscosityStrength", fluidMedium.viscosityStrength);
+        //compute.SetFloat("targetDensity", fluidMedium.targetDensity);
+        //compute.SetFloat("pressureMultiplier", fluidMedium.pressureMultiplier);
+        //compute.SetFloat("nearPressureMultiplier", fluidMedium.nearPressureMultiplier);
+        //compute.SetFloat("viscosityStrength", fluidMedium.viscosityStrength);
         compute.SetVector("boundsSize", boundsSize);
         compute.SetVector("obstacleSize", obstacleSize);
         compute.SetVector("obstacleCentre", obstacleCentre);
@@ -203,6 +203,12 @@ public class Simulation2D : MonoBehaviour
         compute.SetFloat("SpikyPow2ScalingFactor", 6 / (Mathf.PI * Mathf.Pow(smoothingRadius, 4)));
         compute.SetFloat("SpikyPow3DerivativeScalingFactor", 30 / (Mathf.Pow(smoothingRadius, 5) * Mathf.PI));
         compute.SetFloat("SpikyPow2DerivativeScalingFactor", 12 / (Mathf.Pow(smoothingRadius, 4) * Mathf.PI));
+
+        // Per-fluid medium settings:
+        for(int i = 0; i < fluidMedia.Length; i++){
+            fluidProfiles[i] = fluidMedia[i].GetProfile();
+        }
+        fluidMediaProfiles.SetData(fluidProfiles);
 
         // Mouse interaction settings:
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
