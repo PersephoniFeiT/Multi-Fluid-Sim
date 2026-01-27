@@ -28,12 +28,15 @@ public class Simulation2D : MonoBehaviour
     public ComputeShader compute;
     //public ParticleSpawner spawner;
     public ParticleDisplay2D display;
-    public FluidMedium fluidMedium;
+    [SerializeField]
+    public FluidMedium[] fluidMedia;
 
     // Buffers
     public ComputeBuffer positionBuffer { get; private set; }
     public ComputeBuffer velocityBuffer { get; private set; }
     public ComputeBuffer densityBuffer { get; private set; }
+    public ComputeBuffer fluidMediaIndeces;
+    public ComputeBuffer fluidMediaProfiles;
     ComputeBuffer predictedPositionBuffer;
     ComputeBuffer spatialIndices;
     ComputeBuffer spatialOffsets;
@@ -64,8 +67,26 @@ public class Simulation2D : MonoBehaviour
         //nearPressureMultiplier = fluidMedium.nearPressureMultiplier;
         //viscosityStrength = fluidMedium.viscosityStrength;
 
-        spawnData = fluidMedium.spawner.GetSpawnData();
-        numParticles = spawnData.positions.Length;
+        
+        //spawnData = fluidMedium.spawner.GetSpawnData();
+        /*for(int i = 0; i < fluidMedia.Length; i++){
+            ParticleSpawner.ParticleSpawnData newSpawnData = new ParticleSpawner.ParticleSpawnData(spawnData.positions.Length + fluidMedium[i].spawner.particleCount);
+            spawnData.positions.CopyTo(newSpawnData.positions, 0);
+            spawnData.velocities.CopyTo(newSpawnData.velocities, 0);
+            fluidMedia[i].spawner.GetSpawnData().positions.CopyTo(newSpawnData.positions, spawnData.positions.Length);
+            fluidMedia[i].spawner.GetSpawnData().velocities.CopyTo(newSpawnData.velocities, spawnData.velocities.Length);
+            spawnData = newSpawnData;
+        }*/
+
+        //numParticles = 0;
+
+        //for(int i = 0; i < fluidMedia.Lenght; i++)
+
+
+
+
+        //numParticles = spawnData.positions.Length;
+
 
         Debug.Log("Controls: Space = Play/Pause, R = Reset, LMB = Attract, RMB = Repel");
 
@@ -75,15 +96,17 @@ public class Simulation2D : MonoBehaviour
         
 
         // Create buffers
-        positionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
-        predictedPositionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
-        velocityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
-        densityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
-        spatialIndices = ComputeHelper.CreateStructuredBuffer<uint3>(numParticles);
-        spatialOffsets = ComputeHelper.CreateStructuredBuffer<uint>(numParticles);
+        //positionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+        //predictedPositionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+        //velocityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+        //densityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+        //spatialIndices = ComputeHelper.CreateStructuredBuffer<uint3>(numParticles);
+        //spatialOffsets = ComputeHelper.CreateStructuredBuffer<uint>(numParticles);
+        //fluidMediaIndeces = ComputeHelper.CreateStructuredBuffer<uint>(numParticles);
+        //fluidMediaProfiles = ComputeHelper.CreateStructuredBuffer<FluidMediumProfile>(fluidMedia.Length);
 
         // Set buffer data
-        SetInitialBufferData(spawnData);
+        InitializeBufferData(fluidMedia);
 
         // Init compute
         ComputeHelper.SetBuffer(compute, positionBuffer, "Positions", externalForcesKernel, updatePositionKernel);
@@ -92,6 +115,8 @@ public class Simulation2D : MonoBehaviour
         ComputeHelper.SetBuffer(compute, spatialOffsets, "SpatialOffsets", spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
         ComputeHelper.SetBuffer(compute, densityBuffer, "Densities", densityKernel, pressureKernel, viscosityKernel);
         ComputeHelper.SetBuffer(compute, velocityBuffer, "Velocities", externalForcesKernel, pressureKernel, viscosityKernel, updatePositionKernel);
+        ComputeHelper.SetBuffer(compute, fluidMediaIndeces, "fluidMediaIndeces", pressureKernel, viscosityKernel, updatePositionKernel);
+        ComputeHelper.SetBuffer(compute, fluidMediaProfiles, "fluidMediaProfiles", pressureKernel, viscosityKernel, updatePositionKernel);
 
         compute.SetInt("numParticles", numParticles);
 
@@ -194,14 +219,65 @@ public class Simulation2D : MonoBehaviour
         compute.SetFloat("interactionInputRadius", interactionRadius);
     }
 
-    void SetInitialBufferData(ParticleSpawner.ParticleSpawnData spawnData)
+    void InitializeBufferData(FluidMedium[] media)
     {
-        float2[] allPoints = new float2[spawnData.positions.Length];
-        System.Array.Copy(spawnData.positions, allPoints, spawnData.positions.Length);
+        // Initialize numParticles and profiles data
+        numParticles = 0;
+        FluidMedium.FluidMediumProfile[] profilesData = new FluidMedium.FluidMediumProfile[media.Length];
+        
+        for(int i = 0; i < media.Length; i++){
+            numParticles += media[i].spawner.particleCount;
+            profilesData[i] = media[i].GetProfile();
+        }
+        
+        // Initialize per particle data
+        uint[] mediaIndecesData = new uint[numParticles];
+        float2[] allPoints = new float2[numParticles];
+        float2[] allVelocities = new float2[numParticles];
 
+        int particleBufferIndex = 0;
+        for(int i = 0; i < media.Length; i++){
+            for(int j = 0; j < media[i].spawner.particleCount; j++){
+                mediaIndecesData[particleBufferIndex + j] = (uint)i;
+                allPoints[particleBufferIndex + j] = media[i].spawner.GetSpawnData().positions[j];
+                allVelocities[particleBufferIndex + j] = media[i].spawner.GetSpawnData().velocities[j];
+            }
+            particleBufferIndex += media[i].spawner.particleCount;
+        }
+
+        
+        // Create buffers
+        fluidMediaProfiles = ComputeHelper.CreateStructuredBuffer<FluidMediumProfile>(fluidMedia.Length);
+        positionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+        predictedPositionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+        velocityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+        densityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+        spatialIndices = ComputeHelper.CreateStructuredBuffer<uint3>(numParticles);
+        spatialOffsets = ComputeHelper.CreateStructuredBuffer<uint>(numParticles);
+        fluidMediaIndeces = ComputeHelper.CreateStructuredBuffer<uint>(numParticles);
+
+        // Set buffer data
+        fluidMediaProfiles.SetData(profilesData);
+
+        fluidMediaIndeces.SetData(mediaIndecesData);
+        positionBuffer.SetData(allPoints);
+        predictedPositionBuffer.SetData(allPoints);
+        velocityBuffer.SetData(allVelocities);
+
+        /*float2[] allPoints = new float2[spawnData.positions.Length];
+        System.Array.Copy(spawnData.positions, allPoints, spawnData.positions.Length);
+    
         positionBuffer.SetData(allPoints);
         predictedPositionBuffer.SetData(allPoints);
         velocityBuffer.SetData(spawnData.velocities);
+
+        for(int i = 0; i < allPoints.Length; i++){
+            
+        }
+
+        for(int i = 0; i < media.lenght; i++){
+            fluidMediaProfiles[i] = media[i].GetProfile();
+        }*/
     }
 
     void HandleInput()
