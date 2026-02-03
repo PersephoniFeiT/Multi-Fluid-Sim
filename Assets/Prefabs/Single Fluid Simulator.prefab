@@ -1,0 +1,147 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4861414576278282416
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6420355753970176029}
+  - component: {fileID: 6177973763151615168}
+  - component: {fileID: 6063066377813767134}
+  - component: {fileID: 8226597079547877156}
+  - component: {fileID: 7696840479888433124}
+  m_Layer: 0
+  m_Name: Single Fluid Simulator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6420355753970176029
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4861414576278282416}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6177973763151615168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4861414576278282416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf901970f9cf132479a879d7a4acde3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeScale: 1
+  fixedTimeStep: 0
+  iterationsPerFrame: 3
+  gravity: -12
+  smoothingRadius: 0.35
+  boundsSize: {x: 17.1, y: 9.3}
+  obstacleSize: {x: 0, y: 0}
+  obstacleCentre: {x: 0, y: 0}
+  interactionRadius: 2
+  interactionStrength: 90
+  compute: {fileID: 7200000, guid: 1c77ce8de78fddb419ed2d15cae41af0, type: 3}
+  display: {fileID: 7696840479888433124}
+  fluidMedia:
+  - {fileID: 8226597079547877156}
+--- !u!114 &6063066377813767134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4861414576278282416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 895837b52d5fc53409ded3589d4da696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  particleCount: 4032
+  initialVelocity: {x: 0, y: 0}
+  spawnCentre: {x: 3.35, y: 0.51}
+  spawnSize: {x: 7, y: 7}
+  jitterStr: 0.025
+  showSpawnBoundsGizmos: 1
+--- !u!114 &8226597079547877156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4861414576278282416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fe2c21f5b53f5245bed8170a27790c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  collisionDamping: 0.95
+  targetDensity: 55
+  pressureMultiplier: 500
+  nearPressureMultiplier: 18
+  viscosityStrength: 0.06
+  spawner: {fileID: 6063066377813767134}
+  display: {fileID: 7696840479888433124}
+--- !u!114 &7696840479888433124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4861414576278282416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b090cee05a6cd0e4291a0e02381231c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+  shader: {fileID: 4800000, guid: 441b7193936682446b30d2140d15792a, type: 3}
+  scale: 0.08
+  colourMap:
+    serializedVersion: 2
+    key0: {r: 0, g: 0.34978318, b: 1, a: 1}
+    key1: {r: 0.037711263, g: 1, b: 0, a: 1}
+    key2: {r: 0.99621856, g: 1, b: 0, a: 0}
+    key3: {r: 1, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 25829
+    ctime2: 37394
+    ctime3: 65535
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 4
+    m_NumAlphaKeys: 2
+  gradientResolution: 64
+  velocityDisplayMax: 6.5
