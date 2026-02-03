@@ -30,7 +30,7 @@ public class Simulation2D : MonoBehaviour
     public ParticleDisplay2D display;
     [SerializeField]
     public FluidMedium[] fluidMedia;
-    FLuidMedium.FluidMediumProfile[] fluidProfiles;
+    FluidMedium.FluidMediumProfile[] fluidProfiles;
 
     // Buffers
     public ComputeBuffer positionBuffer { get; private set; }
@@ -107,17 +107,10 @@ public class Simulation2D : MonoBehaviour
         //fluidMediaProfiles = ComputeHelper.CreateStructuredBuffer<FluidMediumProfile>(fluidMedia.Length);
 
         // Set buffer data
+        fluidProfiles = new FluidMedium.FluidMediumProfile[fluidMedia.Length];
         InitializeBufferData(fluidMedia);
 
-        // Init compute
-        ComputeHelper.SetBuffer(compute, positionBuffer, "Positions", externalForcesKernel, updatePositionKernel);
-        ComputeHelper.SetBuffer(compute, predictedPositionBuffer, "PredictedPositions", externalForcesKernel, spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
-        ComputeHelper.SetBuffer(compute, spatialIndices, "SpatialIndices", spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
-        ComputeHelper.SetBuffer(compute, spatialOffsets, "SpatialOffsets", spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
-        ComputeHelper.SetBuffer(compute, densityBuffer, "Densities", densityKernel, pressureKernel, viscosityKernel);
-        ComputeHelper.SetBuffer(compute, velocityBuffer, "Velocities", externalForcesKernel, pressureKernel, viscosityKernel, updatePositionKernel);
-        ComputeHelper.SetBuffer(compute, fluidMediaIndeces, "fluidMediaIndeces", pressureKernel, viscosityKernel, updatePositionKernel);
-        ComputeHelper.SetBuffer(compute, fluidMediaProfiles, "fluidMediaProfiles", pressureKernel, viscosityKernel, updatePositionKernel);
+        
 
         compute.SetInt("numParticles", numParticles);
 
@@ -253,7 +246,7 @@ public class Simulation2D : MonoBehaviour
 
         
         // Create buffers
-        fluidMediaProfiles = ComputeHelper.CreateStructuredBuffer<FluidMediumProfile>(fluidMedia.Length);
+        fluidMediaProfiles = ComputeHelper.CreateStructuredBuffer<FluidMedium.FluidMediumProfile>(fluidMedia.Length);
         positionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
         predictedPositionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
         velocityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
@@ -269,6 +262,16 @@ public class Simulation2D : MonoBehaviour
         positionBuffer.SetData(allPoints);
         predictedPositionBuffer.SetData(allPoints);
         velocityBuffer.SetData(allVelocities);
+
+        // Init compute
+        ComputeHelper.SetBuffer(compute, positionBuffer, "Positions", externalForcesKernel, updatePositionKernel);
+        ComputeHelper.SetBuffer(compute, predictedPositionBuffer, "PredictedPositions", externalForcesKernel, spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
+        ComputeHelper.SetBuffer(compute, spatialIndices, "SpatialIndices", spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
+        ComputeHelper.SetBuffer(compute, spatialOffsets, "SpatialOffsets", spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
+        ComputeHelper.SetBuffer(compute, densityBuffer, "Densities", densityKernel, pressureKernel, viscosityKernel);
+        ComputeHelper.SetBuffer(compute, velocityBuffer, "Velocities", externalForcesKernel, pressureKernel, viscosityKernel, updatePositionKernel);
+        ComputeHelper.SetBuffer(compute, fluidMediaIndeces, "fluidMediaIndeces", pressureKernel, viscosityKernel, updatePositionKernel);
+        ComputeHelper.SetBuffer(compute, fluidMediaProfiles, "fluidMediaProfiles", pressureKernel, viscosityKernel, updatePositionKernel);
 
         /*float2[] allPoints = new float2[spawnData.positions.Length];
         System.Array.Copy(spawnData.positions, allPoints, spawnData.positions.Length);
@@ -302,9 +305,9 @@ public class Simulation2D : MonoBehaviour
         {
             isPaused = true;
             // Reset positions, the run single frame to get density etc (for debug purposes) and then reset positions again
-            SetInitialBufferData(spawnData);
+            InitializeBufferData(fluidMedia);
             RunSimulationStep();
-            SetInitialBufferData(spawnData);
+            InitializeBufferData(fluidMedia);
         }
     }
 

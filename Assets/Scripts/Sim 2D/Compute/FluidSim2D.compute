@@ -18,7 +18,7 @@ struct FluidMediumProfile{
 	float nearPressureMultiplier;
 	float viscosityStrength;
 	float3 padding;
-}
+};
 
 // Buffers
 RWStructuredBuffer<float2> Positions;
@@ -29,7 +29,7 @@ RWStructuredBuffer<uint3> SpatialIndices; // used for spatial hashing
 RWStructuredBuffer<uint> SpatialOffsets; // used for spatial hashing
 
 RWStructuredBuffer<uint> fluidMediaIndeces;
-RWStructuredBuffer<FluidMediumProfile> fluidMedia;
+RWStructuredBuffer<FluidMediumProfile> fluidMediaProfiles;
 
 // Simulation Settings
 const uint numParticles;
@@ -340,7 +340,7 @@ void CalculateViscosity (uint3 id : SV_DispatchThreadID)
 		}
 
 	}
-	Velocities[id.x] += viscosityForce * fluidMediaIndeces[id.x].viscosityStrength * deltaTime;
+	Velocities[id.x] += viscosityForce * fluidMediaProfiles[fluidMediaIndeces[id.x]].viscosityStrength * deltaTime;
 }
 
 [numthreads(NumThreads, 1, 1)]

@@ -14,7 +14,7 @@ public class FluidMedium : MonoBehaviour
     [Header("References")]
     public ParticleSpawner spawner;
     public ParticleDisplay2D display;
-    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -26,4 +26,29 @@ public class FluidMedium : MonoBehaviour
     {
         
     }
+
+    public FluidMediumProfile GetProfile()
+    {
+        FluidMediumProfile profile = new FluidMediumProfile();
+        profile.collisionDamping = collisionDamping;
+        profile.targetDensity = targetDensity;
+        profile.pressureMultiplier = pressureMultiplier;
+        profile.nearPressureMultiplier = nearPressureMultiplier;
+        profile.viscosityStrength = viscosityStrength;
+        return profile;
+    }
+
+    public struct FluidMediumProfile
+    {
+        public float collisionDamping;
+        public float targetDensity;
+        public float pressureMultiplier;
+        public float nearPressureMultiplier;
+        public float viscosityStrength;
+        public float padding0;
+        public float padding1;
+        public float padding2;
+    }
+
+    
 }
