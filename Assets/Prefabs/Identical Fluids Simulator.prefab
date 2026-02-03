@@ -66,7 +66,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   particleCount: 2016
   initialVelocity: {x: 0, y: 0}
-  spawnCentre: {x: 1.35, y: 0.51}
+  spawnCentre: {x: -3, y: 0.51}
   spawnSize: {x: 7, y: 7}
   jitterStr: 0.025
   showSpawnBoundsGizmos: 1
