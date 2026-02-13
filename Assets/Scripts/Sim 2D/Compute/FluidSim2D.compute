@@ -8,17 +8,18 @@
 // Includes
 #include "./FluidMaths2D.hlsl"
 #include "./SpatialHash.hlsl"
+#include "../ShaderTypes.hlsl"
 
 static const int NumThreads = 64;
 
-struct FluidMediumProfile{
+/*struct FluidMediumProfile{
 	float collisionDamping;
 	float targetDensity;
 	float pressureMultiplier;
 	float nearPressureMultiplier;
 	float viscosityStrength;
 	float3 padding;
-};
+};*/
 
 // Buffers
 RWStructuredBuffer<float2> Positions;

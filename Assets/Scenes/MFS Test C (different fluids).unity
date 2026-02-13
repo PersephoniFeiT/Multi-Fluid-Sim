@@ -222,6 +222,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 50168152036489635, guid: 8f4f45d20943eb346bd429a74c210723, type: 3}
+      propertyPath: spawnCentre.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 50168152036489635, guid: 8f4f45d20943eb346bd429a74c210723, type: 3}
+      propertyPath: spawnCentre.y
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 1670821934227530898, guid: 8f4f45d20943eb346bd429a74c210723, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -260,6 +268,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1670821934227530898, guid: 8f4f45d20943eb346bd429a74c210723, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2042435377636576680, guid: 8f4f45d20943eb346bd429a74c210723, type: 3}
+      propertyPath: particleCount
+      value: 1008
+      objectReference: {fileID: 0}
+    - target: {fileID: 2042435377636576680, guid: 8f4f45d20943eb346bd429a74c210723, type: 3}
+      propertyPath: spawnCentre.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2042435377636576680, guid: 8f4f45d20943eb346bd429a74c210723, type: 3}
+      propertyPath: initialVelocity.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2295022059458043248, guid: 8f4f45d20943eb346bd429a74c210723, type: 3}
