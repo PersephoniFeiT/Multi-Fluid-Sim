@@ -1,22 +1,25 @@
 using UnityEngine;
 
-public class ParticleDisplay2D : MonoBehaviour
+public class ParticleDisplay2D : FluidsDisplayGPU
 {
-	public Mesh mesh;
+	/*public Mesh mesh;
 	public Shader shader;
 	public float scale;
+	*/
 	public Gradient colourMap;
+	/*
 	public int gradientResolution;
+	*/
 	public float velocityDisplayMax;
+	/*
 
 	Material material;
 	ComputeBuffer argsBuffer;
-	Bounds bounds;
+	Bounds bounds; */
 	Texture2D gradientTexture;
-	bool needsUpdate;
+	/*bool needsUpdate;**/
 
-
-	public void Init(Simulation2D sim)
+	public override void Init(Simulation2D sim)
 	{
 		material = new Material(shader);
 		material.SetBuffer("Positions2D", sim.positionBuffer);
@@ -27,16 +30,17 @@ public class ParticleDisplay2D : MonoBehaviour
 		bounds = new Bounds(Vector3.zero, Vector3.one * 10000);
 	}
 
-	void LateUpdate()
+	/*void LateUpdate()
 	{
 		if (shader != null)
 		{
 			UpdateSettings();
 			Graphics.DrawMeshInstancedIndirect(mesh, 0, material, bounds, argsBuffer);
 		}
-	}
+	}*/
 
-	void UpdateSettings()
+
+	public override void UpdateSettings()
 	{
 		if (needsUpdate)
 		{
@@ -80,7 +84,7 @@ public class ParticleDisplay2D : MonoBehaviour
 		texture.Apply();
 	}
 
-	void OnValidate()
+	/*void OnValidate()
 	{
 		needsUpdate = true;
 	}
@@ -88,5 +92,5 @@ public class ParticleDisplay2D : MonoBehaviour
 	void OnDestroy()
 	{
 		ComputeHelper.Release(argsBuffer);
-	}
+	} */
 }

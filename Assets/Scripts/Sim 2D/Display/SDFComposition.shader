@@ -2,9 +2,9 @@ Shader "Instanced/SDFComposition"
 {
     Properties
     {
-        _MainTex ("Accumulated Density (RGB: Density, ID*Inf, 0)", 2D) = "white"
-        _BgColor ("Background Color", Color) = (0,0,0,1);
-        _Gloss ("SurgaceGloss", Range(0, 1)) = 0;
+        _MainTex ("Accumulated Density (RGB: Density, ID*Inf, 0)", 2D) = "white" {}
+        _BgColor ("Background Color", Color) = (0,0,0,1)
+        _Gloss ("SurfaceGloss", Range(0, 1)) = 0
     }
     SubShader
     {
@@ -47,7 +47,7 @@ Shader "Instanced/SDFComposition"
             fixed4 frag (v2f i) : SV_Target
             {
                 //sample accumulated distance feild
-                float4 data = text2d(_MainTex, i.uv);
+                 float4 data = tex2D(_MainTex, i.uv);
                 float density = data.r;
 
                 //draw background if no fluid
@@ -58,8 +58,8 @@ Shader "Instanced/SDFComposition"
                 uint winnerID = (uint) round(data.g / max(density, 0.0001));
                 FluidMediumProfile flprof = FluidMediaProfiles[winnerID];
                 //physics-based thresholding of fluid interface
-                float saturation = density / max(p.targetDensity, 0.001);
-                float finalThreshold = 0.5 - (p.viscosityStrength * 0.15) + (p.pressureMultiplier * 0.02);
+                float saturation = density / max(flprof.targetDensity, 0.001);
+                float finalThreshold = 0.5 - (flprof.viscosityStrength * 0.15) + (flprof.pressureMultiplier * 0.02);
                 if (saturation > finalThreshold){
                     float3 finalRGB = lerp(float3(1,1,1), float3(0.5,0.7,1), saturation); //temp coloring
                     float edgeAlpha = smoothstep(finalThreshold, finalThreshold + 0.05, saturation); //edge antialiasing

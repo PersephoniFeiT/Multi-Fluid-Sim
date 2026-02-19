@@ -27,7 +27,7 @@ public class Simulation2D : MonoBehaviour
     [Header("References")]
     public ComputeShader compute;
     //public ParticleSpawner spawner;
-    public ParticleDisplay2D display;
+    public FluidsDisplayGPU display;
     [SerializeField]
     public FluidMedium[] fluidMedia;
     FluidMedium.FluidMediumProfile[] fluidProfiles;

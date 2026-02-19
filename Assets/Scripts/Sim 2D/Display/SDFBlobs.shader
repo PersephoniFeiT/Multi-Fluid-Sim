@@ -29,7 +29,7 @@ Shader "Instanced/SDFBlobs" {
                 float4 pos : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 uint mediumIndex : TEXCOORD1;
-            }
+            };
 
             v2f vert (appdata_full v, uint instanceID : SV_InstanceID)
             {
@@ -41,9 +41,9 @@ Shader "Instanced/SDFBlobs" {
 
                 v2f o;
                 o.pos = UnityObjectToClipPos(float4(vPos, 1));
-                o.uv = v.textcood;
+                o.uv = v.texcoord;
                 o.mediumIndex = mIdx;
-                return 0;
+                return o;
             }
 
             float4 frag (v2f i) : SV_Target
@@ -52,7 +52,7 @@ Shader "Instanced/SDFBlobs" {
                 float sqrDst = dot(uv, uv);
                 if (sqrDst > 1) discard;
 
-                float influence = 1.0 - sqrDist;
+                float influence = 1.0 - sqrDst;
                 influence *= influence;
                 return float4(influence, (float) i.mediumIndex * influence, 0, 1);
             }
