@@ -5,7 +5,6 @@ public abstract class FluidsDisplayGPU : MonoBehaviour
     public Mesh mesh;
     public Shader shader;
     public float scale;
-    //public Gradient colourMap;
     public int gradientResolution;
 
     protected Material material;
@@ -18,6 +17,7 @@ public abstract class FluidsDisplayGPU : MonoBehaviour
 
     public void LateUpdate()
     {
+        if (material == null || argsBuffer == null) return;
         if (shader != null)
         {
             UpdateSettings();

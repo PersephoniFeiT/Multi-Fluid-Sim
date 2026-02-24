@@ -214,6 +214,38 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1626707603 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4861414576278282416, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+  m_PrefabInstance: {fileID: 6587589589195230328}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1626707605 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8226597079547877156, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+  m_PrefabInstance: {fileID: 6587589589195230328}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1626707603}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fe2c21f5b53f5245bed8170a27790c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1626707609
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1626707603}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0aaf2a2c39b16143a6206f5af61b2ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+  shader: {fileID: 4800000, guid: 7687ea83c169b5e4cbdcecf8301a17a5, type: 3}
+  scale: 0.08
+  gradientResolution: 0
 --- !u!1001 &6587589589195230328
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -226,6 +258,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: Single Fluid Simulator
       objectReference: {fileID: 0}
+    - target: {fileID: 6177973763151615168, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+      propertyPath: display
+      value: 
+      objectReference: {fileID: 1626707609}
+    - target: {fileID: 6177973763151615168, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+      propertyPath: fluidMedia.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6177973763151615168, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+      propertyPath: fluidMedia.Array.data[1]
+      value: 
+      objectReference: {fileID: 1626707605}
     - target: {fileID: 6420355753970176029, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -269,11 +313,18 @@ PrefabInstance:
     - target: {fileID: 7696840479888433124, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
       propertyPath: shader
       value: 
-      objectReference: {fileID: 4800000, guid: 7687ea83c169b5e4cbdcecf8301a17a5, type: 3}
+      objectReference: {fileID: 4800000, guid: 441b7193936682446b30d2140d15792a, type: 3}
+    - target: {fileID: 7696840479888433124, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4861414576278282416, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1626707609}
   m_SourcePrefab: {fileID: 100100000, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

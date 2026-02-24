@@ -13,6 +13,7 @@ Shader "Instanced/SDFBlobs" {
             #pragma vertex vert
             #pragma fragment frag
             #pragma target 4.5
+            #pragma multi_compile_instancing
 
             #include "UnityCG.cginc"
             #include "../ShaderTypes.hlsl"
@@ -37,10 +38,10 @@ Shader "Instanced/SDFBlobs" {
 
                 float3 worldPos = float3(Positions2D[instanceID], 0);
 
-                float3 vPos = worldPos + mul(unity_ObjectToWorld, v.vertex * _GlobalScale);
+                float3 vPos = float3(Positions2D[instanceID], 0) + (v.vertex.xyz * _GlobalScale);
 
                 v2f o;
-                o.pos = UnityObjectToClipPos(float4(vPos, 1));
+                o.pos = UnityWorldToClipPos(float4(vPos, 1));
                 o.uv = v.texcoord;
                 o.mediumIndex = mIdx;
                 return o;
