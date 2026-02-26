@@ -17,11 +17,12 @@ Shader "Instanced/SDFBlobs" {
 
             #include "UnityCG.cginc"
             #include "../ShaderTypes.hlsl"
+            //#include "Assets/Scripts/Sim 2D/Compute/FluidMaths2D.hlsl"
 
             StructuredBuffer<float2> Positions2D;
             StructuredBuffer<float2> DensityData;
             StructuredBuffer<FluidMediumProfile> FluidMediaProfiles;
-            StructuredBuffer<uint> FluidMediaIndices;
+            StructuredBuffer<uint> FluidMediaIndeces;
 
             float _GlobalScale;
 
@@ -34,7 +35,7 @@ Shader "Instanced/SDFBlobs" {
 
             v2f vert (appdata_full v, uint instanceID : SV_InstanceID)
             {
-                uint mIdx = FluidMediaIndices[instanceID];
+                uint mIdx = FluidMediaIndeces[instanceID];
 
                 float3 worldPos = float3(Positions2D[instanceID], 0);
 
@@ -51,11 +52,14 @@ Shader "Instanced/SDFBlobs" {
             {
                 float2 uv = (i.uv - 0.5) * 2;
                 float sqrDst = dot(uv, uv);
-                if (sqrDst > 1) discard;
+                float dst = sqrt(sqrDst);
+                if (dst > _GlobalScale) discard;
+                float influence = _GlobalScale - dst;
+                uint numFluids;
+                uint k;
+                FluidMediaProfiles.GetDimensions(numFluids, k);
 
-                float influence = 1.0 - sqrDst;
-                influence *= influence;
-                return float4(influence, (float) i.mediumIndex * influence, 0, 1);
+                return float4(influence, (float) i.mediumIndex /(float) numFluids * influence, 0, 1);
             }
             ENDCG
         }

@@ -3,6 +3,7 @@ using UnityEngine;
 public class SDFDisplayGPU : FluidsDisplayGPU{
     public override void Init(Simulation2D sim)
     {
+        scale = sim.smoothingRadius * 2;
         material = new Material(shader);
         material.SetBuffer("Positions2D", sim.positionBuffer);
         material.SetBuffer("DensityData", sim.densityBuffer);
