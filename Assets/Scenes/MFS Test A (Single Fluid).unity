@@ -226,6 +226,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: Single Fluid Simulator
       objectReference: {fileID: 0}
+    - target: {fileID: 6177973763151615168, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+      propertyPath: boundsSize.x
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 6177973763151615168, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+      propertyPath: boundsSize.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6177973763151615168, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+      propertyPath: obstacleSize.x
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6177973763151615168, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+      propertyPath: obstacleSize.y
+      value: 4.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 6177973763151615168, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
+      propertyPath: obstacleCentre.y
+      value: 2.3
+      objectReference: {fileID: 0}
     - target: {fileID: 6420355753970176029, guid: edaf6373ce35d9645be7d53d3dbc420c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

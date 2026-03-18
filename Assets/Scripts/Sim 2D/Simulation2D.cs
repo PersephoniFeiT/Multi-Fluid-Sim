@@ -17,8 +17,11 @@ public class Simulation2D : MonoBehaviour
     //float nearPressureMultiplier;
     //float viscosityStrength;
     public Vector2 boundsSize;
+
+    [Header("Obstacle Settings")]
     public Vector2 obstacleSize;
     public Vector2 obstacleCentre;
+    public float obstacleRotation;
 
     [Header("Interaction Settings")]
     public float interactionRadius;
@@ -134,7 +137,7 @@ public class Simulation2D : MonoBehaviour
     {
         // Run simulation if not in fixed timestep mode
         // (skip running for first few frames as deltaTime can be disproportionaly large)
-        if (!fixedTimeStep && Time.frameCount > 10)
+        if (!fixedTimeStep && Time.frameCount > 100)
         {
             RunSimulationFrame(Time.deltaTime);
         }
@@ -152,6 +155,7 @@ public class Simulation2D : MonoBehaviour
     {
         if (!isPaused)
         {
+            obstacleRotation += 0.01f;
             //obstacleCentre.x -= 0.01f;
             float timeStep = frameTime / iterationsPerFrame * timeScale;
 
@@ -190,6 +194,7 @@ public class Simulation2D : MonoBehaviour
         compute.SetVector("boundsSize", boundsSize);
         compute.SetVector("obstacleSize", obstacleSize);
         compute.SetVector("obstacleCentre", obstacleCentre);
+        compute.SetFloat("obstacleRotation", obstacleRotation);
 
         compute.SetFloat("Poly6ScalingFactor", 4 / (Mathf.PI * Mathf.Pow(smoothingRadius, 8)));
         compute.SetFloat("SpikyPow3ScalingFactor", 10 / (Mathf.PI * Mathf.Pow(smoothingRadius, 5)));
@@ -216,6 +221,8 @@ public class Simulation2D : MonoBehaviour
         compute.SetVector("interactionInputPoint", mousePos);
         compute.SetFloat("interactionInputStrength", currInteractStrength);
         compute.SetFloat("interactionInputRadius", interactionRadius);
+
+        //obstacleCentre.x += ((Time.time % 100) - 50) * 0.01f;
     }
 
     void InitializeBufferData(FluidMedium[] media)

@@ -49,6 +49,7 @@ const float interactionInputRadius;
 
 const float2 obstacleSize;
 const float2 obstacleCentre;
+const float obstacleRotation;
 
 float DensityKernel(float dst, float radius)
 {
@@ -157,11 +158,14 @@ void HandleCollisions(uint particleIndex)
 {
 	float2 pos = Positions[particleIndex];
 	float2 vel = Velocities[particleIndex];
+	const float epsilon = 0.0001f;
 
 	// Keep particle inside bounds
 	const float2 halfSize = boundsSize * 0.5;
 	float2 edgeDst = halfSize - abs(pos);
-
+	
+	/*
+	Sebastian's old rectangular collision code, kept for reference but replaced with circular for my art piece. i dont really want to write proper code to make this data driven
 	if (edgeDst.x <= 0)
 	{
 		pos.x = halfSize.x * sign(pos.x);
@@ -171,10 +175,19 @@ void HandleCollisions(uint particleIndex)
 	{
 		pos.y = halfSize.y * sign(pos.y);
 		vel.y *= -1 * fluidMediaProfiles[fluidMediaIndeces[particleIndex]].collisionDamping;
+	} */
+	//collision inside a circular boundary for my art piece, revert to rectangular if you want to use for something else
+	if (dot(pos, pos) >= dot(halfSize, halfSize))
+	{
+		float dst = length(pos);
+		float2 dirToCentre = pos / dst;
+		pos = dirToCentre * (length(halfSize) - epsilon);
+		vel *= -1 * fluidMediaProfiles[fluidMediaIndeces[particleIndex]].collisionDamping;
 	}
 
 	// Collide particle against the test obstacle
-	const float2 obstacleHalfSize = obstacleSize * 0.5;
+	//replacing this to handle rotated rectangles which i think have general use cases beyond what i need them for clock hands. I LOVE BAD DOCUMENTATION !!!!
+	/*const float2 obstacleHalfSize = obstacleSize * 0.5;
 	float2 obstacleEdgeDst = obstacleHalfSize - abs(pos - obstacleCentre);
 
 	if (obstacleEdgeDst.x >= 0 && obstacleEdgeDst.y >= 0)
@@ -187,11 +200,58 @@ void HandleCollisions(uint particleIndex)
 			pos.y = obstacleHalfSize.y * sign(pos.y - obstacleCentre.y) + obstacleCentre.y;
 			vel.y *= -1 * fluidMediaProfiles[fluidMediaIndeces[particleIndex]].collisionDamping;
 		}
-	}
+	} */
+	//rotated rectangle collision
+	//edge distance of a point to a rotated rectangle defined by diagonal vector (obstacleSize), center point and rotation angle
+	float2 obstacleHalfSize = obstacleSize * 0.5;
+	float2 relativePos = pos - obstacleCentre;
 
-	// Update position and velocity
-	Positions[particleIndex] = pos;
-	Velocities[particleIndex] = vel;
+	// 1. Transform to local space
+	float cosRot = cos(-obstacleRotation);
+	float sinRot = sin(-obstacleRotation);
+	float2 localPos = float2(
+    relativePos.x * cosRot - relativePos.y * sinRot,
+    relativePos.x * sinRot + relativePos.y * cosRot
+);
+
+// 2. Check collision
+float2 edgeDstObstacle = obstacleHalfSize - abs(localPos);
+
+if (edgeDstObstacle.x > 0 && edgeDstObstacle.y > 0) 
+{
+    float2 localNormal = float2(0, 0);
+
+    if (edgeDstObstacle.x < edgeDstObstacle.y) {
+        localNormal.x = sign(localPos.x);
+        localPos.x = (obstacleHalfSize.x + epsilon) * localNormal.x;
+    } else {
+        localNormal.y = sign(localPos.y);
+        localPos.y = (obstacleHalfSize.y + epsilon) * localNormal.y;
+    }
+
+    float cosRotBack = cos(obstacleRotation);
+    float sinRotBack = sin(obstacleRotation);
+    
+    float2 worldNormal = float2(
+        localNormal.x * cosRotBack - localNormal.y * sinRotBack,
+        localNormal.x * sinRotBack + localNormal.y * cosRotBack
+    );
+    
+    pos = float2(
+        localPos.x * cosRotBack - localPos.y * sinRotBack,
+        localPos.x * sinRotBack + localPos.y * cosRotBack
+    ) + obstacleCentre;
+
+    float velDotNormal = dot(vel, worldNormal);
+    if (velDotNormal < 0) 
+    {
+        float damping = fluidMediaProfiles[fluidMediaIndeces[particleIndex]].collisionDamping;
+        vel -= (2.0 - damping) * velDotNormal * worldNormal * damping;
+    }
+}
+
+Positions[particleIndex] = pos;
+Velocities[particleIndex] = vel;
 }
 
 [numthreads(NumThreads,1,1)]
