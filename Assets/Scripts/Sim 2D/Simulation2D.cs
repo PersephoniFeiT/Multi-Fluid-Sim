@@ -19,9 +19,7 @@ public class Simulation2D : MonoBehaviour
     public Vector2 boundsSize;
 
     [Header("Obstacle Settings")]
-    public Vector2 obstacleSize;
-    public Vector2 obstacleCentre;
-    public float obstacleRotation;
+    public DynamicObstacle[] obstacles;
 
     [Header("Interaction Settings")]
     public float interactionRadius;
@@ -44,6 +42,9 @@ public class Simulation2D : MonoBehaviour
     ComputeBuffer predictedPositionBuffer;
     ComputeBuffer spatialIndices;
     ComputeBuffer spatialOffsets;
+    ComputeBuffer obstacleSizesBuffer;
+    ComputeBuffer obstacleCentresBuffer;
+    ComputeBuffer obstacleRotationsBuffer;
     GPUSort gpuSort;
 
     // Kernel IDs
@@ -60,6 +61,12 @@ public class Simulation2D : MonoBehaviour
     bool pauseNextFrame;
 
     public int numParticles { get; private set; }
+
+    private Vector2[] obstacleSizes;
+    private Vector2[] obstacleCentres;
+    private float[] obstacleRotations;
+
+    private bool obstaclesUpdated = false;
 
 
     void Start()
@@ -111,7 +118,11 @@ public class Simulation2D : MonoBehaviour
 
         // Set buffer data
         fluidProfiles = new FluidMedium.FluidMediumProfile[fluidMedia.Length];
-        InitializeBufferData(fluidMedia);
+        obstacleSizes = new Vector2[obstacles.Length];
+        obstacleCentres = new Vector2[obstacles.Length];
+        obstacleRotations = new float[obstacles.Length];
+    
+        InitializeBufferData(fluidMedia, obstacles);
 
         
 
@@ -155,7 +166,7 @@ public class Simulation2D : MonoBehaviour
     {
         if (!isPaused)
         {
-            obstacleRotation += 0.01f;
+            obstacles[0].rotation += 0.01f;
             //obstacleCentre.x -= 0.01f;
             float timeStep = frameTime / iterationsPerFrame * timeScale;
 
@@ -192,9 +203,10 @@ public class Simulation2D : MonoBehaviour
         //compute.SetFloat("nearPressureMultiplier", fluidMedium.nearPressureMultiplier);
         //compute.SetFloat("viscosityStrength", fluidMedium.viscosityStrength);
         compute.SetVector("boundsSize", boundsSize);
-        compute.SetVector("obstacleSize", obstacleSize);
-        compute.SetVector("obstacleCentre", obstacleCentre);
-        compute.SetFloat("obstacleRotation", obstacleRotation);
+        //compute.SetVector("obstacleSize", obstacleSize);
+        //compute.SetVector("obstacleCentre", obstacleCentre);
+        //compute.SetFloat("obstacleRotation", obstacleRotation);
+        compute.SetInt("numObstacles", obstacles.Length);
 
         compute.SetFloat("Poly6ScalingFactor", 4 / (Mathf.PI * Mathf.Pow(smoothingRadius, 8)));
         compute.SetFloat("SpikyPow3ScalingFactor", 10 / (Mathf.PI * Mathf.Pow(smoothingRadius, 5)));
@@ -222,10 +234,36 @@ public class Simulation2D : MonoBehaviour
         compute.SetFloat("interactionInputStrength", currInteractStrength);
         compute.SetFloat("interactionInputRadius", interactionRadius);
 
+        //TODO: HARDCODE 3 OBSTACLES IN COMPUTE SINCE PARAMETERIZING THEM AS BUFFERS IS SUPER LAGGY TO UPDATE EVERY FRAME!!!!
+
+        if (obstacles.Length != obstacleSizes.Length){
+                obstacleSizes = new Vector2[obstacles.Length];
+                obstacleCentres = new Vector2[obstacles.Length];
+                obstacleRotations = new float[obstacles.Length];
+                obstaclesUpdated = true;
+        }
+
+        for(int i = 0; i < obstacles.Length; i++){
+            if(obstacles[i].size != obstacleSizes[i] || obstacles[i].centre != obstacleCentres[i] || obstacles[i].rotation != obstacleRotations[i]){
+                obstacleSizes[i] = obstacles[i].size;
+                obstacleCentres[i] = obstacles[i].centre;
+                obstacleRotations[i] = obstacles[i].rotation;
+                obstaclesUpdated = true;
+            }
+        }
+
+        if(obstaclesUpdated){
+            obstacleSizesBuffer.SetData(obstacleSizes);
+            obstacleCentresBuffer.SetData(obstacleCentres);
+            obstacleRotationsBuffer.SetData(obstacleRotations);
+            obstaclesUpdated = false;
+        }
+
+
         //obstacleCentre.x += ((Time.time % 100) - 50) * 0.01f;
     }
 
-    void InitializeBufferData(FluidMedium[] media)
+    void InitializeBufferData(FluidMedium[] media, DynamicObstacle[] obstacles)
     {
         // Initialize numParticles and profiles data
         numParticles = 0;
@@ -251,6 +289,11 @@ public class Simulation2D : MonoBehaviour
             particleBufferIndex += media[i].spawner.particleCount;
         }
 
+        for(int i = 0; i < obstacles.Length; i++){
+            obstacleSizes[i] = obstacles[i].size;
+            obstacleCentres[i] = obstacles[i].centre;
+            obstacleRotations[i] = obstacles[i].rotation;
+        }
         
         // Create buffers
         fluidMediaProfiles = ComputeHelper.CreateStructuredBuffer<FluidMedium.FluidMediumProfile>(fluidMedia.Length);
@@ -261,6 +304,9 @@ public class Simulation2D : MonoBehaviour
         spatialIndices = ComputeHelper.CreateStructuredBuffer<uint3>(numParticles);
         spatialOffsets = ComputeHelper.CreateStructuredBuffer<uint>(numParticles);
         fluidMediaIndeces = ComputeHelper.CreateStructuredBuffer<uint>(numParticles);
+        obstacleSizesBuffer = ComputeHelper.CreateStructuredBuffer<float2>(obstacles.Length);
+        obstacleCentresBuffer = ComputeHelper.CreateStructuredBuffer<float2>(obstacles.Length);
+        obstacleRotationsBuffer = ComputeHelper.CreateStructuredBuffer<float>(obstacles.Length);
 
         // Set buffer data
         fluidMediaProfiles.SetData(profilesData);
@@ -269,6 +315,10 @@ public class Simulation2D : MonoBehaviour
         positionBuffer.SetData(allPoints);
         predictedPositionBuffer.SetData(allPoints);
         velocityBuffer.SetData(allVelocities);
+        obstacleSizesBuffer.SetData(obstacleSizes);
+        obstacleCentresBuffer.SetData(obstacleCentres);
+        obstacleRotationsBuffer.SetData(obstacleRotations);
+
 
         // Init compute
         ComputeHelper.SetBuffer(compute, positionBuffer, "Positions", externalForcesKernel, updatePositionKernel);
@@ -279,6 +329,9 @@ public class Simulation2D : MonoBehaviour
         ComputeHelper.SetBuffer(compute, velocityBuffer, "Velocities", externalForcesKernel, pressureKernel, viscosityKernel, updatePositionKernel);
         ComputeHelper.SetBuffer(compute, fluidMediaIndeces, "fluidMediaIndeces", pressureKernel, viscosityKernel, updatePositionKernel);
         ComputeHelper.SetBuffer(compute, fluidMediaProfiles, "fluidMediaProfiles", pressureKernel, viscosityKernel, updatePositionKernel);
+        ComputeHelper.SetBuffer(compute, obstacleSizesBuffer, "obstacleSizes", externalForcesKernel, updatePositionKernel);
+        ComputeHelper.SetBuffer(compute, obstacleCentresBuffer, "obstacleCentres", externalForcesKernel, updatePositionKernel);
+        ComputeHelper.SetBuffer(compute, obstacleRotationsBuffer, "obstacleRotations", externalForcesKernel, updatePositionKernel);
 
         /*float2[] allPoints = new float2[spawnData.positions.Length];
         System.Array.Copy(spawnData.positions, allPoints, spawnData.positions.Length);
@@ -312,9 +365,9 @@ public class Simulation2D : MonoBehaviour
         {
             isPaused = true;
             // Reset positions, the run single frame to get density etc (for debug purposes) and then reset positions again
-            InitializeBufferData(fluidMedia);
+            InitializeBufferData(fluidMedia, obstacles);
             RunSimulationStep();
-            InitializeBufferData(fluidMedia);
+            InitializeBufferData(fluidMedia, obstacles);
         }
     }
 
@@ -327,9 +380,9 @@ public class Simulation2D : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Gizmos.color = new Color(0, 1, 0, 0.4f);
-        Gizmos.DrawWireCube(Vector2.zero, boundsSize);
-        Gizmos.DrawWireCube(obstacleCentre, obstacleSize);
+        //Gizmos.color = new Color(0, 1, 0, 0.4f);
+        Gizmos.DrawWireSphere(Vector2.zero, boundsSize.magnitude / 2f);
+        //Gizmos.DrawWireCube(obstacleCentre, obstacleSize);
 
         if (Application.isPlaying)
         {
