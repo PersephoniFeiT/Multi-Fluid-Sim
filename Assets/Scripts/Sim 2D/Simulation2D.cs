@@ -167,6 +167,8 @@ public class Simulation2D : MonoBehaviour
         if (!isPaused)
         {
             obstacles[0].rotation += 0.01f;
+            obstacles[1].rotation -= 0.002f;
+            obstacles[2].rotation += 0.001f;
             //obstacleCentre.x -= 0.01f;
             float timeStep = frameTime / iterationsPerFrame * timeScale;
 
