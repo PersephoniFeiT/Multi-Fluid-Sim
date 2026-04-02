@@ -33,6 +33,10 @@ public class Simulation2D : MonoBehaviour
     public FluidMedium[] fluidMedia;
     FluidMedium.FluidMediumProfile[] fluidProfiles;
 
+    [Header("Algorithmic Art Control")]
+    public ClockFace clockController;
+
+
     // Buffers
     public ComputeBuffer positionBuffer { get; private set; }
     public ComputeBuffer velocityBuffer { get; private set; }
@@ -121,6 +125,8 @@ public class Simulation2D : MonoBehaviour
         obstacleSizes = new Vector2[obstacles.Length];
         obstacleCentres = new Vector2[obstacles.Length];
         obstacleRotations = new float[obstacles.Length];
+
+        InitializeClockHands();
     
         InitializeBufferData(fluidMedia, obstacles);
 
@@ -140,6 +146,7 @@ public class Simulation2D : MonoBehaviour
     {
         if (fixedTimeStep)
         {
+            UpdateClockHands();
             RunSimulationFrame(Time.fixedDeltaTime);
         }
     }
@@ -150,6 +157,7 @@ public class Simulation2D : MonoBehaviour
         // (skip running for first few frames as deltaTime can be disproportionaly large)
         if (!fixedTimeStep && Time.frameCount > 100)
         {
+            UpdateClockHands();
             RunSimulationFrame(Time.deltaTime);
         }
 
@@ -166,9 +174,6 @@ public class Simulation2D : MonoBehaviour
     {
         if (!isPaused)
         {
-            obstacles[0].rotation += 0.01f;
-            obstacles[1].rotation -= 0.002f;
-            obstacles[2].rotation += 0.001f;
             //obstacleCentre.x -= 0.01f;
             float timeStep = frameTime / iterationsPerFrame * timeScale;
 
@@ -236,7 +241,7 @@ public class Simulation2D : MonoBehaviour
         compute.SetFloat("interactionInputStrength", currInteractStrength);
         compute.SetFloat("interactionInputRadius", interactionRadius);
 
-        //TODO: HARDCODE 3 OBSTACLES IN COMPUTE SINCE PARAMETERIZING THEM AS BUFFERS IS SUPER LAGGY TO UPDATE EVERY FRAME!!!!
+        
 
         if (obstacles.Length != obstacleSizes.Length){
                 obstacleSizes = new Vector2[obstacles.Length];
@@ -399,5 +404,68 @@ public class Simulation2D : MonoBehaviour
             }
         }
 
+    }
+
+    void InitializeClockHands(){
+        if(clockController != null){
+            //Debug.Log("Initializing clock hand positions");
+            switch(obstacles.Length){
+                case 1:
+                    clockController.secondHandDiagonal = obstacles[0].size;
+                    obstacles[0].rotation = (float)clockController.secondsTheta();
+                    obstacles[0].centre = clockController.handCenter(clockController.secondsTheta(), clockController.secondHandDiagonal);
+                    break;
+                case 2:
+                    clockController.secondHandDiagonal = obstacles[0].size;
+                    clockController.minuteHandDiagonal = obstacles[1].size;
+                    obstacles[0].rotation = (float)clockController.secondsTheta();
+                    obstacles[0].centre = clockController.handCenter(clockController.secondsTheta(), clockController.secondHandDiagonal);
+                    obstacles[1].rotation = (float)clockController.minutesTheta();
+                    obstacles[1].centre = clockController.handCenter(clockController.minutesTheta(), clockController.minuteHandDiagonal);
+                    break;
+                case >= 3:
+                    clockController.secondHandDiagonal = obstacles[0].size;
+                    clockController.minuteHandDiagonal = obstacles[1].size;
+                    clockController.hourHandDiagonal = obstacles[2].size;
+                    obstacles[0].rotation = (float)clockController.secondsTheta();
+                    obstacles[0].centre = clockController.handCenter(clockController.secondsTheta(), clockController.secondHandDiagonal);
+                    obstacles[1].rotation = (float)clockController.minutesTheta();
+                    obstacles[1].centre = clockController.handCenter(clockController.minutesTheta(), clockController.minuteHandDiagonal);
+                    obstacles[2].rotation = (float)clockController.hoursTheta();
+                    obstacles[2].centre = clockController.handCenter(clockController.hoursTheta(), clockController.hourHandDiagonal);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+
+    void UpdateClockHands(){
+        if(clockController != null){
+            //Debug.Log("Updating clock hand positions");
+            switch(obstacles.Length){
+                case 1:
+                    obstacles[0].rotation = (float)clockController.secondsTheta();
+                    obstacles[0].centre = clockController.handCenter(clockController.secondsTheta(), clockController.secondHandDiagonal);
+                    break;
+                case 2:
+                    obstacles[0].rotation = (float)clockController.secondsTheta();
+                    obstacles[0].centre = clockController.handCenter(clockController.secondsTheta(), clockController.secondHandDiagonal);
+                    obstacles[1].rotation = (float)clockController.minutesTheta();
+                    obstacles[1].centre = clockController.handCenter(clockController.minutesTheta(), clockController.minuteHandDiagonal);
+                    break;
+                case 3:
+                    obstacles[0].rotation = (float)clockController.secondsTheta();
+                    obstacles[0].centre = clockController.handCenter(clockController.secondsTheta(), clockController.secondHandDiagonal);
+                    obstacles[1].rotation = (float)clockController.minutesTheta();
+                    obstacles[1].centre = clockController.handCenter(clockController.minutesTheta(), clockController.minuteHandDiagonal);
+                    obstacles[2].rotation = (float)clockController.hoursTheta();
+                    obstacles[2].centre = clockController.handCenter(clockController.hoursTheta(), clockController.hourHandDiagonal);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }

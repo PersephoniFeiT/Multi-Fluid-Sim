@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-//TODO: HARDCODE 3 OBSTACLES IN COMPUTE SINCE PARAMETERIZING THEM AS BUFFERS IS SUPER LAGGY TO UPDATE EVERY FRAME!!!!
+
 public class DynamicObstacle : MonoBehaviour
 {
     public Vector2 size; //the diagonal vector of the rectangle or x = length, y = width
